@@ -1,0 +1,105 @@
+﻿<head>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ajax-unobtrusive/3.2.6/jquery.unobtrusive-ajax.min.js"></script>
+</head>
+
+
+@model IEnumerable<TrainSchedule.Models.Train>
+
+@{
+    ViewData["Title"] = "Train Search";
+}
+<style>
+
+    /* existing styles */
+    .departure {
+        background-color: #e0f7fa; /* Example background color for departure */
+    }
+
+    .arrival {
+        background-color: #fff3e0; /* Example background color for arrival */
+    }
+    /* Style the autocomplete input and results */
+    .ui-autocomplete-input {
+        width: 300px;
+        padding: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .ui-autocomplete {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 5px;
+        background-color: white;
+    }
+    .ui-menu-item{
+        padding: 10px;
+    }
+    .ui-menu-item-wrapper:before {
+        content: attr(data-category);
+        display: inline-block;
+        width: 80px;
+        margin-right: 10px;
+        font-weight: bold;
+    }
+</style>
+
+<form asp-action="TrainSearch" method="post" data-ajax="true" data-ajax-method="POST" data-ajax-update="#results">
+    <input type="text" id="searchTerm" name="searchTerm" class="ui-autocomplete-input" placeholder="Enter Departure or Arrival City" />
+    <button type="submit">Search</button>
+</form>
+
+<div id="results"></div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $("#searchTerm").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: "@Url.Action("GetCities", "Home")", // Use Url.Action for cleaner routing
+                        dataType: "json",
+                        data: {
+                            term: request.term,
+                            category: $("#searchCategory").val() // Include category filter
+                        },
+                        success: function(data) {
+                            response($.map(data, function(item) {
+                                return {
+                                    label: item.label + " (" + item.category + ")",
+                                    value: item.value
+                                }
+                            }));
+                        }
+                    });
+                },
+                minLength: 1,
+                select: function(event, ui) {
+                    // Update searchTerm input to just the city name
+                    $("#searchTerm").val(ui.item.value);
+                    // You can also trigger the search here if needed
+                    // $("#searchForm").submit();
+                }
+            }).data("ui-autocomplete")._renderItem = function(ul, item) {
+                return $("<li>")
+                    .data("item.autocomplete", item)
+                    .append("<div class='" + item.category.toLowerCase() + "'>" + item.label + "</div>")
+                    .appendTo(ul);
+            };
+            // Handle search button click
+            $("#searchForm").submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+                var selectedItem = $("#searchTerm").autocomplete("instance").selectedItem;
+                if (selectedItem) {
+                    $("#searchTerm").val(selectedItem.value); // Update input with the city name
+                }
+                this.submit(); // Now submit the form with the updated value
+        });
+        
+        });
+        </script>
+    
+}

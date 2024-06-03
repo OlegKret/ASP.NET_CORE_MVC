@@ -1,0 +1,31 @@
+﻿@model IEnumerable<TrainSchedule.Models.Train>
+
+@if (Model.Any())
+{
+    <h2>Search Results</h2>
+    <table class="table">  
+        <thead>
+        <tr>
+            <th>Departure City</th>
+            <th>Arrival City</th>
+            <th>Train Number</th>
+            <th>Available Seats</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var train in Model)
+        {
+            <tr>
+                <td>@train.DepartureCity</td>
+                <td>@train.ArrivalCity</td>
+                <td>@train.TrainNumber</td>
+                <td>@train.AvailableSeats</td> 
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No trains found.</p>
+}
